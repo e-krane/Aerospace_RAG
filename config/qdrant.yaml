@@ -1,0 +1,7 @@
+# Qdrant Configuration
+# Simplified configuration for initial deployment
+
+log_level: INFO
+
+telemetry:
+  enabled: false

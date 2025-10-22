@@ -42,6 +42,7 @@ LaTeX Source → Docling → Hybrid Storage
 - Stage 2: ColBERT reranking (to top-10)
 - Use Reciprocal Rank Fusion (RRF) with k=60
 - Weight technical content toward keywords (α=0.7)
+- MCP server capability
 
 ### 6. Orchestration Framework
 **Primary: DSPy or LightRAG**
@@ -104,19 +105,19 @@ LaTeX Source → Docling → Hybrid Storage
 
 ## Implementation Phases
 
-### Phase 1: Foundation (Week 1-2)
+### Phase 1: Foundation
 - Set up Docling parser
 - Implement basic chunking
 - Deploy Qdrant
 - Create evaluation dataset
 
-### Phase 2: Core RAG (Week 3-4)
+### Phase 2: Core RAG
 - Implement hybrid search
 - Add ColBERT reranking
 - Generate embeddings with Qwen3
 - Build LLM annotation pipeline
 
-### Phase 3: Optimization (Week 5-6)
+### Phase 3: Optimization
 - Apply quantization techniques
 - Fine-tune embeddings on corpus
 - Implement bidirectional linking
