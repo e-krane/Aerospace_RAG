@@ -1,0 +1,127 @@
+{
+  "description": "Golden test set for Aerospace RAG system evaluation",
+  "version": "1.0.0",
+  "total_cases": 200,
+  "distribution": {
+    "equation_heavy": 50,
+    "conceptual_understanding": 50,
+    "cross_reference": 30,
+    "figure_interpretation": 30,
+    "procedural": 40
+  },
+  "test_cases": [
+    {
+      "id": "eq-001",
+      "category": "equation_heavy",
+      "difficulty": "medium",
+      "question": "What is the formula for calculating the moment of inertia of a rectangular cross-section?",
+      "expected_chunks": [
+        "chapter_3_section_2"
+      ],
+      "expected_equations": [
+        "$$I = \\frac{bh^3}{12}$$"
+      ],
+      "answer_keywords": [
+        "moment of inertia",
+        "rectangular",
+        "bh^3/12",
+        "b is width",
+        "h is height"
+      ],
+      "ground_truth": "The moment of inertia for a rectangular cross-section is given by I = bh³/12, where b is the width and h is the height of the rectangle.",
+      "notes": "Tests ability to retrieve and explain fundamental equation"
+    },
+    {
+      "id": "concept-001",
+      "category": "conceptual_understanding",
+      "difficulty": "medium",
+      "question": "Explain the difference between stress and strain in structural analysis.",
+      "expected_chunks": [
+        "chapter_1_section_1",
+        "chapter_1_section_2"
+      ],
+      "expected_equations": [
+        "$$\\sigma = \\frac{F}{A}$$",
+        "$$\\epsilon = \\frac{\\Delta L}{L_0}$$"
+      ],
+      "answer_keywords": [
+        "stress",
+        "strain",
+        "force per unit area",
+        "deformation",
+        "Hooke's law"
+      ],
+      "ground_truth": "Stress (σ) is the internal force per unit area within a material (F/A), while strain (ε) is the relative deformation or change in shape (ΔL/L₀). They are related through Hooke's law for elastic materials.",
+      "notes": "Tests conceptual understanding of fundamental concepts"
+    },
+    {
+      "id": "xref-001",
+      "category": "cross_reference",
+      "difficulty": "hard",
+      "question": "How does the shear stress formula in Chapter 3 relate to the beam theory discussed in Chapter 2?",
+      "expected_chunks": [
+        "chapter_2_section_4",
+        "chapter_3_section_3"
+      ],
+      "expected_equations": [
+        "$$\\tau = \\frac{VQ}{Ib}$$"
+      ],
+      "answer_keywords": [
+        "shear stress",
+        "beam theory",
+        "transverse loading",
+        "shear flow"
+      ],
+      "ground_truth": "The shear stress formula τ = VQ/(Ib) from Chapter 3 is derived from the beam bending theory in Chapter 2. It accounts for the distribution of shear forces in beams under transverse loading, where V is the shear force, Q is the first moment of area, I is the moment of inertia, and b is the width.",
+      "notes": "Tests ability to connect concepts across chapters"
+    },
+    {
+      "id": "fig-001",
+      "category": "figure_interpretation",
+      "difficulty": "medium",
+      "question": "What does Figure 4.2 show about the stress distribution in a cantilever beam?",
+      "expected_chunks": [
+        "chapter_4_section_2"
+      ],
+      "expected_figures": [
+        "Figure 4.2"
+      ],
+      "answer_keywords": [
+        "cantilever beam",
+        "stress distribution",
+        "linear variation",
+        "maximum at fixed end"
+      ],
+      "ground_truth": "Figure 4.2 illustrates the linear stress distribution in a cantilever beam under uniform loading, showing maximum bending stress at the fixed end and zero stress at the free end, following the beam bending equation.",
+      "notes": "Tests ability to interpret and explain figures"
+    },
+    {
+      "id": "proc-001",
+      "category": "procedural",
+      "difficulty": "medium",
+      "question": "What are the steps to calculate the deflection of a simply supported beam with a point load at the center?",
+      "expected_chunks": [
+        "chapter_5_section_3"
+      ],
+      "expected_equations": [
+        "$$\\delta = \\frac{PL^3}{48EI}$$"
+      ],
+      "answer_keywords": [
+        "deflection",
+        "simply supported",
+        "point load",
+        "steps",
+        "formula"
+      ],
+      "ground_truth": "To calculate the deflection: 1) Identify the beam parameters (length L, moment of inertia I, Young's modulus E), 2) Note the load P and its position (center), 3) Apply the deflection formula δ = PL³/(48EI), 4) Calculate the numerical result.",
+      "notes": "Tests ability to provide step-by-step procedures"
+    }
+  ],
+  "metadata": {
+    "created_by": "manual_curation",
+    "domain": "aerospace_structures",
+    "source_document": "Aerospace_Structures_LaTeX",
+    "curation_notes": "Template with 5 example test cases across all categories. Expand to 200 cases total by adding more examples in each category.",
+    "instructions": "Each test case should have: id, category, difficulty, question, expected_chunks, expected_equations/figures, answer_keywords, ground_truth, and notes."
+  }
+}
