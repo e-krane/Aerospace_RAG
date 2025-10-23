@@ -271,5 +271,121 @@ class TestLLMResponse:
         assert response.content == ""
 
 
+class TestStreaming:
+    """Test streaming response generation."""
+
+    @patch("src.llm.client.OPENAI_AVAILABLE", True)
+    @patch("src.llm.client.OpenAI")
+    def test_stream_openai(self, mock_openai):
+        """Test streaming with OpenAI."""
+        # Mock streaming response
+        mock_chunk1 = Mock()
+        mock_chunk1.choices = [Mock(delta=Mock(content="Hello "))]
+        mock_chunk2 = Mock()
+        mock_chunk2.choices = [Mock(delta=Mock(content="world"))]
+        mock_chunk3 = Mock()
+        mock_chunk3.choices = [Mock(delta=Mock(content="!"))]
+
+        mock_stream = [mock_chunk1, mock_chunk2, mock_chunk3]
+
+        mock_client = Mock()
+        mock_client.chat.completions.create.return_value = iter(mock_stream)
+        mock_openai.return_value = mock_client
+
+        client = LLMClient(provider="openai", model="gpt-4")
+
+        # Collect streamed chunks
+        chunks = list(client.generate_stream(prompt="Test", context=None))
+
+        assert len(chunks) == 3
+        assert "".join(chunks) == "Hello world!"
+
+    @patch("src.llm.client.ANTHROPIC_AVAILABLE", True)
+    @patch("src.llm.client.Anthropic")
+    def test_stream_anthropic(self, mock_anthropic):
+        """Test streaming with Anthropic."""
+        # Mock streaming response
+        mock_stream = Mock()
+        mock_stream.__enter__ = Mock(return_value=mock_stream)
+        mock_stream.__exit__ = Mock(return_value=False)
+        mock_stream.text_stream = iter(["Hello ", "world", "!"])
+
+        mock_client = Mock()
+        mock_client.messages.stream.return_value = mock_stream
+        mock_anthropic.return_value = mock_client
+
+        client = LLMClient(provider="anthropic", model="claude-3-5-sonnet-20241022")
+
+        # Collect streamed chunks
+        chunks = list(client.generate_stream(prompt="Test", context=None))
+
+        assert len(chunks) == 3
+        assert "".join(chunks) == "Hello world!"
+
+    @patch("src.llm.client.OPENAI_AVAILABLE", True)
+    @patch("src.llm.client.OpenAI")
+    def test_stream_with_context(self, mock_openai):
+        """Test streaming with context chunks."""
+        mock_chunk = Mock()
+        mock_chunk.choices = [Mock(delta=Mock(content="Answer"))]
+        mock_stream = [mock_chunk]
+
+        mock_client = Mock()
+        mock_client.chat.completions.create.return_value = iter(mock_stream)
+        mock_openai.return_value = mock_client
+
+        client = LLMClient(provider="openai")
+
+        context = ["Context chunk 1", "Context chunk 2"]
+        chunks = list(client.generate_stream(prompt="Test", context=context))
+
+        assert len(chunks) == 1
+        assert chunks[0] == "Answer"
+
+    @patch("src.llm.client.OPENAI_AVAILABLE", True)
+    @patch("src.llm.client.ANTHROPIC_AVAILABLE", True)
+    @patch("src.llm.client.OpenAI")
+    @patch("src.llm.client.Anthropic")
+    def test_stream_fallback(self, mock_anthropic, mock_openai):
+        """Test fallback for streaming."""
+        # OpenAI fails
+        mock_openai_client = Mock()
+        mock_openai_client.chat.completions.create.side_effect = Exception("OpenAI Error")
+        mock_openai.return_value = mock_openai_client
+
+        # Anthropic succeeds
+        mock_stream = Mock()
+        mock_stream.__enter__ = Mock(return_value=mock_stream)
+        mock_stream.__exit__ = Mock(return_value=False)
+        mock_stream.text_stream = iter(["Fallback", " ", "answer"])
+
+        mock_anthropic_client = Mock()
+        mock_anthropic_client.messages.stream.return_value = mock_stream
+        mock_anthropic.return_value = mock_anthropic_client
+
+        client = LLMClient(
+            provider="openai",
+            fallback_providers=["anthropic"],
+        )
+
+        chunks = list(client.generate_stream(prompt="Test", context=None))
+
+        assert len(chunks) == 3
+        assert "".join(chunks) == "Fallback answer"
+
+    @patch("src.llm.client.OPENAI_AVAILABLE", True)
+    @patch("src.llm.client.OpenAI")
+    def test_stream_all_providers_fail(self, mock_openai):
+        """Test streaming when all providers fail."""
+        mock_client = Mock()
+        mock_client.chat.completions.create.side_effect = Exception("API Error")
+        mock_openai.return_value = mock_client
+
+        client = LLMClient(provider="openai")
+
+        with pytest.raises(RuntimeError, match="All providers failed"):
+            list(client.generate_stream(prompt="Test", context=None))
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

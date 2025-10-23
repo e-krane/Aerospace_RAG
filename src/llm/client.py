@@ -423,6 +423,157 @@ Your task is to answer questions based on the provided context from technical do
 If the context doesn't contain enough information to answer fully, acknowledge this limitation."""
 
 
+    def generate_stream(
+        self,
+        prompt: str,
+        context: Optional[List[str]] = None,
+        system_prompt: Optional[str] = None,
+    ):
+        """
+        Generate answer with streaming support.
+
+        Args:
+            prompt: Question or instruction
+            context: List of context chunks to include
+            system_prompt: System prompt (defaults to technical QA prompt)
+
+        Yields:
+            str: Token chunks as they are generated
+
+        Usage:
+            for chunk in client.generate_stream(prompt="...", context=[...]):
+                print(chunk, end="", flush=True)
+        """
+        # Build full prompt with context
+        full_prompt = self._build_prompt(prompt, context)
+
+        # Use default system prompt if not provided
+        if system_prompt is None:
+            system_prompt = self._get_default_system_prompt()
+
+        # Try primary provider
+        try:
+            yield from self._generate_stream_with_provider(
+                self.provider,
+                self.model,
+                full_prompt,
+                system_prompt,
+            )
+            return
+
+        except Exception as e:
+            logger.warning(f"Primary provider streaming failed: {e}")
+
+        # Try fallback providers
+        for fallback in self.fallback_providers:
+            logger.warning(f"Trying fallback streaming: {fallback}")
+
+            try:
+                fallback_provider = LLMProvider(fallback)
+                fallback_model = self._get_default_model(fallback_provider)
+
+                yield from self._generate_stream_with_provider(
+                    fallback_provider,
+                    fallback_model,
+                    full_prompt,
+                    system_prompt,
+                )
+                return
+
+            except Exception as e:
+                logger.error(f"Fallback {fallback} streaming failed: {e}")
+
+        # All providers failed
+        raise RuntimeError("All providers failed for streaming generation")
+
+    def _generate_stream_with_provider(
+        self,
+        provider: LLMProvider,
+        model: str,
+        prompt: str,
+        system_prompt: str,
+    ):
+        """Generate streaming response from a specific provider."""
+        if provider == LLMProvider.OPENAI:
+            yield from self._generate_stream_openai(model, prompt, system_prompt)
+        elif provider == LLMProvider.ANTHROPIC:
+            yield from self._generate_stream_anthropic(model, prompt, system_prompt)
+        elif provider == LLMProvider.OLLAMA:
+            yield from self._generate_stream_ollama(model, prompt, system_prompt)
+        else:
+            raise ValueError(f"Unknown provider: {provider}")
+
+    def _generate_stream_openai(
+        self,
+        model: str,
+        prompt: str,
+        system_prompt: str,
+    ):
+        """Stream response from OpenAI."""
+        client = self.clients[LLMProvider.OPENAI]
+
+        stream = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+            timeout=self.timeout,
+            stream=True,
+        )
+
+        for chunk in stream:
+            if chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
+
+    def _generate_stream_anthropic(
+        self,
+        model: str,
+        prompt: str,
+        system_prompt: str,
+    ):
+        """Stream response from Anthropic."""
+        client = self.clients[LLMProvider.ANTHROPIC]
+
+        with client.messages.stream(
+            model=model,
+            system=system_prompt,
+            messages=[
+                {"role": "user", "content": prompt},
+            ],
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+        ) as stream:
+            for text in stream.text_stream:
+                yield text
+
+    def _generate_stream_ollama(
+        self,
+        model: str,
+        prompt: str,
+        system_prompt: str,
+    ):
+        """Stream response from Ollama."""
+        stream = ollama.chat(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            options={
+                "temperature": self.temperature,
+                "num_predict": self.max_tokens,
+            },
+            stream=True,
+        )
+
+        for chunk in stream:
+            if "message" in chunk and "content" in chunk["message"]:
+                yield chunk["message"]["content"]
+
+
 def get_llm_client(
     provider: str = "openai",
     model: Optional[str] = None,
