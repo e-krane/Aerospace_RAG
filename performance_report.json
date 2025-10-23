@@ -1,0 +1,91 @@
+{
+  "timestamp": "2025-10-23 19:40:25",
+  "benchmarks": {
+    "embedding_generation": {
+      "name": "Embedding Generation",
+      "iterations": 100,
+      "p50_ms": 0.01,
+      "p95_ms": 0.01,
+      "p99_ms": 0.01,
+      "mean_ms": 0.01,
+      "std_ms": 0.0,
+      "throughput": 175493.89,
+      "memory_mb": 48.38,
+      "passed": true,
+      "target_ms": 100.0
+    },
+    "retrieval_latency": {
+      "name": "Retrieval Latency",
+      "iterations": 1000,
+      "p50_ms": 0.28,
+      "p95_ms": 1.52,
+      "p99_ms": 5.17,
+      "mean_ms": 0.49,
+      "std_ms": 0.78,
+      "throughput": 2034.41,
+      "memory_mb": 90.95,
+      "passed": true,
+      "target_ms": 100.0
+    },
+    "reranking_latency": {
+      "name": "Reranking Latency",
+      "iterations": 500,
+      "p50_ms": 0.01,
+      "p95_ms": 0.01,
+      "p99_ms": 0.02,
+      "mean_ms": 0.01,
+      "std_ms": 0.0,
+      "throughput": 117645.69,
+      "memory_mb": 90.97,
+      "passed": true,
+      "target_ms": 200.0
+    },
+    "end_to_end": {
+      "name": "End-to-End (Query \u2192 Answer)",
+      "iterations": 100,
+      "p50_ms": 1350.39,
+      "p95_ms": 1350.43,
+      "p99_ms": 1350.49,
+      "mean_ms": 1350.4,
+      "std_ms": 0.06,
+      "throughput": 0.74,
+      "memory_mb": 90.97,
+      "passed": true,
+      "target_ms": 2000.0
+    },
+    "quantization": {
+      "name": "Binary Quantization",
+      "iterations": 10,
+      "p50_ms": 4.66,
+      "p95_ms": 5.77,
+      "p99_ms": 5.96,
+      "mean_ms": 4.85,
+      "std_ms": 0.53,
+      "throughput": 206.32,
+      "memory_mb": 110.48,
+      "passed": false,
+      "target_ms": null
+    },
+    "cache_performance": {
+      "name": "Cache Operations",
+      "iterations": 10000,
+      "p50_ms": 0.0,
+      "p95_ms": 0.0,
+      "p99_ms": 0.01,
+      "mean_ms": 0.0,
+      "std_ms": 0.0,
+      "throughput": 418584.86,
+      "memory_mb": 111.66,
+      "passed": false,
+      "target_ms": null
+    },
+    "storage_estimates": {
+      "float32_gb": 0.95,
+      "binary_gb": 0.03,
+      "metadata_gb": 0.95,
+      "total_float32_gb": 1.91,
+      "total_binary_gb": 0.98,
+      "compression_ratio": 32.0
+    }
+  }
+}
