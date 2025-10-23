@@ -16,6 +16,14 @@ from src.llm.prompts import (
     build_conceptual_prompt,
     build_comparative_prompt,
 )
+from src.llm.citation_tracker import (
+    CitationTracker,
+    Citation,
+    ChunkReference,
+    EquationSource,
+    CitationStyle,
+    create_citation_tracker,
+)
 
 __all__ = [
     "LLMClient",
@@ -30,4 +38,10 @@ __all__ = [
     "build_procedural_steps_prompt",
     "build_conceptual_prompt",
     "build_comparative_prompt",
+    "CitationTracker",
+    "Citation",
+    "ChunkReference",
+    "EquationSource",
+    "CitationStyle",
+    "create_citation_tracker",
 ]
