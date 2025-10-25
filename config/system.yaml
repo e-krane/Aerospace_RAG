@@ -1,0 +1,132 @@
+# Aerospace RAG System - System Configuration
+# Updated: 2025-10-25
+
+# Vector Database Configuration
+vector_db:
+  type: "qdrant"
+  host: "localhost"
+  port: 6333
+  collection_name: "aerospace_docs"
+
+  # Quantization settings
+  quantization:
+    enabled: true
+    type: "binary"        # binary (1-bit) or int8 (8-bit)
+    rescore: true         # Enable int8 rescoring
+    always_ram: true      # Keep vectors in RAM
+
+  # Collection settings
+  vector_size: 256        # Matryoshka reduced dimensions
+  distance: "cosine"      # cosine, euclidean, or dot
+
+  # Storage optimization
+  on_disk_payload: false  # Keep payloads in RAM for speed
+  wal_config:
+    wal_capacity_mb: 128
+
+# Retrieval Configuration
+retrieval:
+  # Hybrid search settings
+  hybrid:
+    enabled: true
+    bm25_weight: 0.3      # BM25 contribution
+    semantic_weight: 0.7  # Semantic search contribution
+    top_k: 100            # Retrieve top-100 for fusion
+
+  # Reranking settings
+  reranking:
+    enabled: true
+    model: "colbert-v2"
+    top_k: 10             # Rerank to top-10
+    batch_size: 32
+
+  # Final results
+  max_results: 5          # Return top-5 to user
+
+# Chunking Configuration
+chunking:
+  type: "semantic"        # semantic, hierarchy, or fixed
+  chunk_size: 1024        # Target tokens per chunk
+  overlap: 128            # Token overlap between chunks
+
+  # Semantic chunking settings
+  similarity_threshold: 0.7
+  min_chunk_size: 256
+  max_chunk_size: 2048
+
+  # Equation handling
+  preserve_equations: true
+  equation_boundary: true  # Don't split within equations
+
+# Parsing Configuration
+parsing:
+  primary: "docling"      # Primary parser
+  fallback: "marker"      # Fallback parser
+
+  # Docling settings
+  docling:
+    device: "cuda"        # GPU acceleration
+    batch_size: 1
+    extract_figures: true
+    extract_tables: true
+
+  # Output format
+  output_format: "markdown"
+
+# Caching Configuration
+caching:
+  enabled: true
+
+  # Cache types
+  query_cache:
+    ttl: 3600             # 1 hour
+    max_size: 1000
+
+  embedding_cache:
+    enabled: true
+    persistent: true
+
+  reranking_cache:
+    ttl: 86400            # 24 hours
+    max_size: 10000
+
+# Monitoring Configuration
+monitoring:
+  enabled: false          # Enable when Langfuse configured
+  provider: "langfuse"
+
+  # Metrics to track
+  track:
+    - query_volume
+    - latency_breakdown
+    - error_rates
+    - token_usage
+    - quality_metrics
+
+# Logging Configuration
+logging:
+  level: "INFO"           # DEBUG, INFO, WARNING, ERROR
+  format: "detailed"      # simple or detailed
+  output: "file"          # console, file, or both
+
+  # File settings
+  file_path: "logs/rag.log"
+  rotation: "10 MB"
+  retention: "7 days"
+
+# Performance Targets
+targets:
+  parsing: 3.7            # seconds per page
+  embedding: 100          # tokens per second
+  retrieval: 0.1          # seconds (p95)
+  reranking: 0.2          # seconds (p95)
+  end_to_end: 2.0         # seconds (p95)
+
+# Data Paths
+paths:
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  models: "models"
+  cache: "cache"
+  logs: "logs"
+  evaluation: "data/evaluation"

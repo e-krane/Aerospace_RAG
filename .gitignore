@@ -12,6 +12,8 @@ dist/
 build/
 
 # Models (large files)
+models/hub/
+models/xet/
 models/qwen3-8b/
 models/jina-colbert-v2/
 models/transformers/

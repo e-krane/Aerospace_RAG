@@ -1,0 +1,72 @@
+# Aerospace RAG System - Model Configuration
+# Updated: 2025-10-25
+# Hardware: 12GB VRAM GPU
+
+# Embedding Model Configuration
+embeddings:
+  provider: "ollama"
+  model: "qwen3-embedding:8b"
+
+  # Model specifications
+  dimensions: 768          # Native output dimensions
+  matryoshka: true         # Enable Matryoshka dimension reduction
+  reduced_dimensions: 256  # Target dimensions (3x compression)
+
+  # Performance settings
+  batch_size: 64           # Larger batches with 12GB VRAM
+  normalize: true          # L2 normalization
+
+  # Task instruction for technical content
+  instruction: "Represent this technical document for retrieval:"
+
+  # VRAM usage: ~4.7GB
+
+# LLM Configuration
+llm:
+  provider: "ollama"
+  model: "qwen3:latest"    # Qwen3 8B
+
+  # Generation parameters
+  temperature: 0.1         # Low for technical accuracy
+  max_tokens: 2000        # Maximum response length
+  timeout: 60             # Request timeout (seconds)
+
+  # Retry configuration
+  max_retries: 3
+  retry_delay: 1          # Initial delay (exponential backoff)
+
+  # Fallback providers (optional, requires API keys)
+  fallbacks: []
+  # - "anthropic"         # Claude
+  # - "openai"            # GPT-4
+
+  # VRAM usage: ~5.2GB
+
+# Evaluation Configuration
+evaluation:
+  provider: "ollama"
+  model: "qwen3:latest"   # Use same LLM as judge
+
+  # RAGAS thresholds
+  thresholds:
+    context_precision: 0.8
+    context_recall: 0.8
+    faithfulness: 0.9
+    answer_relevancy: 0.8
+
+# VRAM Summary (12GB Total)
+vram:
+  total: 12              # Total GPU VRAM (GB)
+  embeddings: 4.7        # qwen3-embedding:8b
+  llm: 5.2               # qwen3:latest
+  peak: 5.2              # Sequential loading
+  simultaneous: 9.9      # Both models loaded
+  headroom: 2.1          # Available for processing
+
+  # Usage modes
+  mode: "parallel"       # "parallel" or "sequential"
+
+  # Can also fit:
+  # - ColBERT reranker: ~1.5GB
+  # - Batch buffers: ~1.0GB
+  # - Cache layers: ~0.5GB
