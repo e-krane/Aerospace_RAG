@@ -50,31 +50,34 @@ from src.pipeline.rag_pipeline import RAGPipeline, IndexingResult
 console = Console()
 
 
-def find_pdf_files(path: Path, recursive: bool = False) -> List[Path]:
+def find_document_files(path: Path, recursive: bool = False) -> List[Path]:
     """
-    Find all PDF files in a path.
+    Find all document files (PDF and LaTeX) in a path.
 
     Args:
         path: File or directory path
         recursive: Search subdirectories
 
     Returns:
-        List of PDF file paths
+        List of document file paths (PDF and .tex)
     """
     if path.is_file():
-        if path.suffix.lower() == ".pdf":
+        if path.suffix.lower() in [".pdf", ".tex"]:
             return [path]
         else:
-            console.print(f"[yellow]Warning: {path} is not a PDF file[/yellow]")
+            console.print(f"[yellow]Warning: {path} is not a PDF or LaTeX file[/yellow]")
             return []
 
     if path.is_dir():
         if recursive:
             pdf_files = list(path.rglob("*.pdf"))
+            tex_files = list(path.rglob("*.tex"))
         else:
             pdf_files = list(path.glob("*.pdf"))
+            tex_files = list(path.glob("*.tex"))
 
-        return sorted(pdf_files)
+        all_files = pdf_files + tex_files
+        return sorted(all_files)
 
     console.print(f"[red]Error: {path} not found[/red]")
     return []
@@ -164,13 +167,13 @@ def display_document_result(result: IndexingResult):
     "-i",
     required=True,
     type=click.Path(exists=True),
-    help="PDF file or directory to index",
+    help="PDF/LaTeX file or directory to index",
 )
 @click.option(
     "--recursive",
     "-r",
     is_flag=True,
-    help="Recursively search directories for PDFs",
+    help="Recursively search directories for documents",
 )
 @click.option(
     "--batch-size",
@@ -232,15 +235,23 @@ def index_documents(
     )
     console.print()
 
-    # Find PDF files
+    # Find document files
     input_path = Path(input)
-    pdf_files = find_pdf_files(input_path, recursive)
+    doc_files = find_document_files(input_path, recursive)
 
-    if not pdf_files:
-        console.print("[red]No PDF files found![/red]")
+    if not doc_files:
+        console.print("[red]No document files found![/red]")
         sys.exit(1)
 
-    console.print(f"Found {len(pdf_files)} PDF file(s) to index")
+    # Count file types
+    pdf_count = sum(1 for f in doc_files if f.suffix.lower() == ".pdf")
+    tex_count = sum(1 for f in doc_files if f.suffix.lower() == ".tex")
+
+    console.print(f"Found {len(doc_files)} file(s) to index:")
+    if pdf_count > 0:
+        console.print(f"  • {pdf_count} PDF file(s)")
+    if tex_count > 0:
+        console.print(f"  • {tex_count} LaTeX file(s)")
     console.print()
 
     # Initialize pipeline
@@ -262,19 +273,19 @@ def index_documents(
     console.print("[bold]Indexing documents:[/bold]")
     console.print()
 
-    for pdf_file in pdf_files:
+    for doc_file in doc_files:
         try:
             # Get file info
-            file_size = pdf_file.stat().st_size
+            file_size = doc_file.stat().st_size
 
             console.print(
-                f"[bold]{pdf_file.name}[/bold] ({format_size(file_size)})"
+                f"[bold]{doc_file.name}[/bold] ({format_size(file_size)})"
             )
 
             # Index with progress indicator
             with console.status(f"[bold green]Processing...") as status:
                 result = pipeline.index_document(
-                    str(pdf_file),
+                    str(doc_file),
                     batch_size=batch_size,
                     show_progress=False,  # Disable internal progress
                 )
@@ -287,8 +298,8 @@ def index_documents(
             console.print("\n[yellow]Indexing interrupted by user[/yellow]")
             break
         except Exception as e:
-            console.print(f"[red]✗ Error processing {pdf_file.name}: {e}[/red]")
-            logger.exception(f"Error processing {pdf_file}")
+            console.print(f"[red]✗ Error processing {doc_file.name}: {e}[/red]")
+            logger.exception(f"Error processing {doc_file}")
             console.print()
 
     total_time_ms = (time.time() - total_start) * 1000

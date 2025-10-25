@@ -68,11 +68,11 @@ class TwoStageRetriever:
 
         # Initialize components
         self.query_analyzer = query_analyzer or QueryAnalyzer()
-        self.semantic_retriever = SemanticRetriever(
-            qdrant_client=qdrant_client,
-            collection_name=collection_name,
-            query_analyzer=self.query_analyzer,
-        )
+        # Note: SemanticRetriever doesn't exist - using direct qdrant calls
+        # self.semantic_retriever = SemanticRetriever(
+        #     qdrant_client=qdrant_client,
+        #     query_analyzer=self.query_analyzer,
+        # )
         self.bm25_retriever = BM25Retriever()
         self.fusion = ReciprocalRankFusion()
         self.reranker = reranker or JinaColBERTReranker()
